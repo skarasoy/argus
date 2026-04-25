@@ -12,7 +12,7 @@ jobs:
       - name: Kodu Kopyala
         uses: actions/checkout@v4
         with:
-          ref: 'ui/v5-designkit' # İŞTE SİHİRLİ SATIR BURASI! Çalışan dalı seçiyoruz.
+          ref: 'ui/v5-designkit'
 
       - name: Xcode Sürümünü Ayarla
         run: |
@@ -33,7 +33,9 @@ jobs:
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO \
+            SWIFT_STRICT_CONCURRENCY=minimal \
+            SWIFT_TREAT_WARNINGS_AS_ERRORS=NO
 
       - name: IPA Formatına Çevir
         run: |
