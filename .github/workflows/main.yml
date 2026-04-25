@@ -1,12 +1,12 @@
 name: Build Argus IPA
 
 on:
-  workflow_dispatch: # Bu sayede işlemi tek tuşla manuel başlatabileceğiz
+  workflow_dispatch:
 
 jobs:
   build:
     name: Mac Üzerinde Derle
-    runs-on: macos-14 # GitHub'ın macOS 14 yüklü sunucusunu istiyoruz
+    runs-on: macos-14
 
     steps:
       - name: Kodu Kopyala
@@ -17,8 +17,11 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
           xcodebuild -version
 
+      - name: Gerekli Konfigürasyon Dosyasını Oluştur
+        # Sorunu çözen satır burası! Derlemeden önce eksik dosyayı yaratıyoruz.
+        run: cp Secrets.xcconfig.example Secrets.xcconfig
+
       - name: Uygulamayı Derle (İmzasız)
-        # Sideloadly kullanacağımız için Apple imza doğrulamasını devre dışı bırakıyoruz
         run: |
           xcodebuild clean build \
             -project argus.xcodeproj \
@@ -33,9 +36,7 @@ jobs:
       - name: IPA Formatına Çevir
         run: |
           mkdir Payload
-          # Derlenen .app dosyasını bulup Payload klasörüne taşıyoruz
           mv build/Build/Products/Release-iphoneos/*.app Payload/
-          # Klasörü sıkıştırıp .ipa yapıyoruz
           zip -r Argus.ipa Payload
 
       - name: Çıktıyı Kullanıcıya Sun
