@@ -5,47 +5,65 @@ on:
 
 jobs:
   build:
-    name: Mac Üzerinde Derle
     runs-on: macos-14
 
     steps:
-      - name: Kodu Kopyala
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: 'ui/v5-designkit'
 
-      - name: Xcode Sürümünü Ayarla
+      - name: Select Xcode
         run: |
-          XCODE_PATH=$(ls -d /Applications/Xcode_16*.app | head -n 1)
-          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer
           xcodebuild -version
 
-      - name: Gerekli Konfigürasyon Dosyasını Oluştur
+      - name: Config oluştur
         run: cp Secrets.xcconfig.example Secrets.xcconfig
 
-      - name: Uygulamayı Derle (İmzasız)
+      - name: Archive oluştur
         run: |
-          xcodebuild clean build \
+          xcodebuild archive \
             -project argus.xcodeproj \
             -scheme argus \
             -configuration Release \
-            -sdk iphoneos \
-            -derivedDataPath build \
-            -quiet \
+            -archivePath build/argus.xcarchive \
+            -destination 'generic/platform=iOS' \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            SWIFT_STRICT_CONCURRENCY=minimal \
-            SWIFT_TREAT_WARNINGS_AS_ERRORS=NO
+            CODE_SIGNING_ALLOWED=NO
 
-      - name: IPA Formatına Çevir
+      - name: ExportOptions.plist oluştur
         run: |
-          mkdir Payload
-          mv build/Build/Products/Release-iphoneos/*.app Payload/
-          zip -r Argus.ipa Payload
+          cat <<EOF > ExportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>development</string>
+              <key>compileBitcode</key>
+              <false/>
+              <key>signingStyle</key>
+              <string>manual</string>
+          </dict>
+          </plist>
+          EOF
 
-      - name: Çıktıyı Kullanıcıya Sun
+      - name: IPA export et
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/argus.xcarchive \
+            -exportPath build \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Debug (çıktıya bak)
+        run: |
+          echo "=== BUILD FOLDER ==="
+          ls -R build
+
+      - name: Artifact yükle
         uses: actions/upload-artifact@v4
         with:
-          name: Argus-IPA-Dosyasi
-          path: Argus.ipa
+          name: Argus-IPA
+          path: build/*.ipa
