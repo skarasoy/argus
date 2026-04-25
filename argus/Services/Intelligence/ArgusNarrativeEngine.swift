@@ -19,6 +19,7 @@ struct ArgusNarrativeEngine {
     // MARK: - Main API (Fallback - Senkron veri özeti)
 
     /// Senkron fallback rapor. AI rapor başarısız olursa kullanılır.
+    @MainActor
     static func generateReport(symbol: String, viewModel: TradingViewModel) -> String {
         let decision = viewModel.grandDecisions[symbol]
         let atlas = viewModel.getFundamentalScore(for: symbol)
@@ -37,6 +38,7 @@ struct ArgusNarrativeEngine {
     }
 
     /// Async AI rapor - Chat veya detaylı analiz için
+    @MainActor
     static func generateAIReport(symbol: String, viewModel: TradingViewModel, type: ReportType = .comprehensive) async -> String {
         let decision = viewModel.grandDecisions[symbol]
         let atlas = viewModel.getFundamentalScore(for: symbol)
