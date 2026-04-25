@@ -11,9 +11,10 @@ jobs:
     steps:
       - name: Kodu Kopyala
         uses: actions/checkout@v4
+        with:
+          ref: 'ui/v5-designkit' # İŞTE SİHİRLİ SATIR BURASI! Çalışan dalı seçiyoruz.
 
       - name: Xcode Sürümünü Ayarla
-        # GitHub'ın bilgisayarındaki Xcode 16'yı dinamik olarak bulup onu zorunlu kılıyoruz
         run: |
           XCODE_PATH=$(ls -d /Applications/Xcode_16*.app | head -n 1)
           sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
