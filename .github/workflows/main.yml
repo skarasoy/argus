@@ -13,12 +13,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Xcode Sürümünü Ayarla
+        # GitHub'ın bilgisayarındaki Xcode 16'yı dinamik olarak bulup onu zorunlu kılıyoruz
         run: |
-          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+          XCODE_PATH=$(ls -d /Applications/Xcode_16*.app | head -n 1)
+          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
           xcodebuild -version
 
       - name: Gerekli Konfigürasyon Dosyasını Oluştur
-        # Sorunu çözen satır burası! Derlemeden önce eksik dosyayı yaratıyoruz.
         run: cp Secrets.xcconfig.example Secrets.xcconfig
 
       - name: Uygulamayı Derle (İmzasız)
